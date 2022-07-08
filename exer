@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+from dataclasses import dataclass
+from datetime import date
+import typer
+
+
+APP = typer.Typer()
+
+
+@dataclass()
+class Exercise:
+    name: str
+    sets: str
+    reps: str
+    weight: str
+    
+    def __post_init__(self):
+        assert(self.sets.isnumeric())
+        assert(self.reps.isnumeric())
+        assert(self.weight.isnumeric())
+
+@dataclass()
+class Log:
+    filename: str
+
+    def log_as_csv(self, exer: Exercise):
+        with open(f"{self.filename}.csv", 'a') as f:
+            f.write(f"{date.today()},{exer.name},{exer.sets},{exer.reps},{exer.weight}\n")
+        
+    def log_as_text(self, exer: Exercise):
+        with open(f"{self.filename}.txt", 'a') as f:
+            f.write(f"[{date.today()}] | {exer.name} | {exer.sets}x{exer.reps} | <{exer.weight}lbs>\n")
+
+
+
+@APP.command()
+def log(name, sets, reps, weight):
+    exercise = Exercise(name, sets, reps, weight)
+
+    Log('training').log_as_csv(exercise)
+    Log('training').log_as_text(exercise)
+
+@APP.command()
+def get_log():
+    with open('training.txt') as file:
+        lst_exer = file.readlines()
+
+    for log in lst_exer:
+        print(log)
+
+
+if __name__ == '__main__':
+    APP()
